@@ -39,8 +39,8 @@ run_icarus()
     # shellcheck disable=SC2086
     iverilog -g2012                  \
              -o sim.out              \
-             $extra_args 2>&1        \
-             | tee log.txt           \
+             $extra_args             \
+             2> log.txt              \
              && vvp sim.out          \
              >> log.txt 2>&1
 }
@@ -331,6 +331,12 @@ for test in $TEST_DIR/*.s; do
     run_assembly $test $prog
     simulate_rtl $prog
     rm $prog
+
+    grep -e PASS -e FAIL -e ERROR -e Error -e error -e Timeout -e ++ log.txt \
+    | sed -e 's/PASS/\x1b[0;32m&\x1b[0m/g' -e 's/FAIL/\x1b[0;31m&\x1b[0m/g'
+
+    rm log.txt
+    
     echo "End of test $test"
 done
 
@@ -363,5 +369,3 @@ do
     esac
 done
 
-grep -e PASS -e FAIL -e ERROR -e Error -e error -e Timeout -e ++ log.txt \
-    | sed -e 's/PASS/\x1b[0;32m&\x1b[0m/g' -e 's/FAIL/\x1b[0;31m&\x1b[0m/g'
