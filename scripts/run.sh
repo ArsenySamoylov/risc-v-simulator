@@ -84,11 +84,10 @@ run_icarus()
     # shellcheck disable=SC2086
     iverilog -g2012                  \
              -o sim.out              \
-             $extra_args             \
-             >> log.txt 2>&1         \
+             $extra_args 2>&1        \
+             | tee log.txt           \
              && vvp sim.out          \
              >> log.txt 2>&1
-
 }
 
 #-----------------------------------------------------------------------------
