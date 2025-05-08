@@ -409,7 +409,7 @@ run_assembly()
             exit 1
         fi
 
-        rars_cmd="java -jar ../../bin/$rars_jar"
+        rars_cmd="java -jar ../bin/$rars_jar"
     fi
 
     # $rars_args has to be unquoted in order to pass as multiple arguments
