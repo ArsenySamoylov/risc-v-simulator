@@ -31,51 +31,6 @@ find_path()
 
 #-----------------------------------------------------------------------------
 
-import_files()
-{
-    import=$(echo "$1" | sed -e 's/common/import/g')
-
-    if ! [ -d "$import/original/cvw" ]
-    then
-        mkdir -p "$import"
-        git clone --depth 1 https://github.com/openhwgroup/cvw.git "$import/original/cvw"
-    fi
-
-    rm    -rf "$import/preprocessed"
-    mkdir -p  "$import/preprocessed/cvw"
-
-    cp -r  \
-       "$import/original/cvw/config/rv32gc/config.vh"              \
-       "$import/original/cvw/config/shared/BranchPredictorType.vh" \
-       "$import/original/cvw/config/shared/config-shared.vh"       \
-       "$import/original/cvw/src/fpu"/*/*                          \
-       "$import/original/cvw/src/fpu"/*.*                          \
-       "$import/original/cvw/src/generic"/*.*                      \
-       "$import/original/cvw/src/generic/flop"/*.*                 \
-       "$import/preprocessed/cvw"
-
-    sed -i -e 's/#(P) //g' "$import/preprocessed/cvw/"*
-    sed -i -e 's/P\./  /g' "$import/preprocessed/cvw/"*
-    sed -i -e 's/import cvw::\*;  #(parameter cvw_t P) //g' "$import/preprocessed/cvw"/*
-
-    sed -i -e 's/, parameter type TYPE=logic \[WIDTH-1:0\]//g' \
-        "$import/preprocessed/cvw/flopenl.sv"
-
-    sed -i -e 's/ TYPE / logic [WIDTH-1:0] /g' \
-        "$import/preprocessed/cvw/flopenl.sv"
-
-    sed -i -e 's/module fmalza #(WIDTH, NF) /module fmalza #(parameter WIDTH = 0, NF = 0) /g' \
-        "$import/preprocessed/cvw/fmalza.sv"
-
-    sed -i -e 's/(parameter FLEN)/(parameter FLEN=64)/g' \
-        "$import/preprocessed/cvw/fregfile.sv"
-
-    sed -i -e 's/ var / /g' \
-        "$import/preprocessed/cvw/or_rows.sv"
-}
-
-#-----------------------------------------------------------------------------
-
 run_icarus()
 {
     extra_args=$1
@@ -84,7 +39,6 @@ run_icarus()
     # shellcheck disable=SC2086
     iverilog -g2012                  \
              -o sim.out              \
-             -I src                  \
              $extra_args 2>&1        \
              | tee log.txt           \
              && vvp sim.out          \
@@ -108,31 +62,6 @@ run_verilator()
 
 }
 
-#-----------------------------------------------------------------------------
-
-prompt_to_clone_if_repo_not_found()
-{
-    common_path=$1
-    import_path=$(find_path "../import/preprocessed/cvw")
-
-    if [ "$import_path" = "none" ]
-    then
-        printf "You need to import external files in order to verify some exercises.\n"
-        printf "Needed files are located at https://github.com/openhwgroup/cvw\n"
-        printf "Clone third-party repository from GitHub? [y/N] "
-
-        read -r input
-
-        if [ "$input" = "y" ] || [ "$input" = "Y" ]
-        then
-            import_files "$common_path"
-            find_path "../import/preprocessed/cvw"
-        else
-            return 1
-        fi
-    fi
-    return 0
-}
 
 #-----------------------------------------------------------------------------
 
@@ -191,101 +120,29 @@ check_verilator_setup()
 }
 
 #-----------------------------------------------------------------------------
-
-prepare_wally_env()
-{
-    choice=$1
-    if [ "$choice" -eq 0 ]
-    then
-        prompt_to_clone_if_repo_not_found "$common_path"
-        choice=$?
-
-        if [ $choice -eq 0 ]
-        then
-            extra_args="$extra_args
-                        -I $import_path
-                        -I $common_path
-                        $import_path/config.vh
-                        $import_path/*.sv
-                        $common_path/wally_fpu/*.sv
-                        $d*.sv"
-        fi
-    fi
-
-    return "$choice"
-}
-
-#-----------------------------------------------------------------------------
 # Main functions
 #-----------------------------------------------------------------------------
 
 simulate_rtl()
 {
+    if [ ! -f $1 ]; then
+        echo "Error: no program to run"
+    fi
+
     check_iverilog_executable
 
     rm -f sim.out
     rm -f dump.vcd
     rm -f log.txt
 
-    common_path=$(find_path "../common")
-    extra_args=""
+    inst_rom=$1
+    inst_template=$1.in.sv
+    sed -e 's#TEST_PROGRAM#"'$1'"#' $TEST_DIR/instruction_rom.in > $inst_template
+
+    extra_args="-I src/ src/*.sv tests/tb.sv $inst_template"
     choice=0
 
-    if [ -f tb.sv ]
-    then
-        # Testbench is in the same directory with the script (HW 05)
-        extra_args="$extra_args ./*.sv"
-        run_icarus "$extra_args"
-    elif [ -d "testbenches" ]
-    then
-        # It is isqrt exercise
-        extra_args="$extra_args
-                    -I $common_path
-                    -I testbenches
-                    testbenches/*.sv
-                    $common_path/isqrt/*.sv
-                    *.sv"
-
-        run_icarus "$extra_args"
-    else
-        # Enter each directory in homework
-        for d in */
-        do
-            extra_args=""
-
-            if [ -d "$d"testbenches ]
-            then
-            # It is isqrt exercise
-            extra_args="$extra_args
-                        -I $common_path
-                        -I $d
-                        -I ${d}testbenches
-                        ${d}testbenches/*.sv
-                        $common_path/isqrt/*.sv
-                        $d*.sv"
-            elif [ -f "$d"testbench.sv ] && grep -q "realtobits" "$d"testbench.sv;
-            then
-                # It is an exercise with Wally CPU blocks
-                prepare_wally_env "$choice"
-
-                # Don't add solution_submodules if we haven't imported Wally CPU
-                if [ -d "$d"solution_submodules ] && [ "$choice" -eq 0 ]
-                then
-                    extra_args="$extra_args
-                                -I  ${d}solution_submodules
-                                ${d}solution_submodules/*.sv"
-                fi
-
-            else
-                # It is a regular exercise with a testbench in each dir
-                extra_args="$extra_args
-                            -I $common_path
-                            $d*.sv"
-            fi
-            # Run icarus with specific arguments
-            run_icarus "$extra_args"
-        done
-    fi
+    run_icarus "$extra_args"
 
     # Don't print iverilog warning about not supporting constant selects
     sed -i -e '/sorry: constant selects/d' log.txt
@@ -380,12 +237,10 @@ lint_code()
 
 #-----------------------------------------------------------------------------
 
+# $1 - test source
+# $2 - output file
 run_assembly()
 {
-    if [ ! -f $1 ]; then
-        echo "Error: Test <$1> not found =("
-    fi
-
     rars_jar=rars1_6.jar
 
     #  nc                              - Copyright notice will not be displayed
@@ -393,7 +248,7 @@ run_assembly()
     #  ae<n>                           - terminate RARS with integer exit code if an assemble error occurs
     #  dump .text HexText program.hex  - dump segment .text to program.hex file in HexText format
 
-    rars_args="nc a ae1 dump .text HexText program.hex"
+    rars_args="nc a ae1 dump .text HexText $2"
 
     if command -v rars > /dev/null 2>&1
     then
@@ -463,13 +318,18 @@ open_waveform()
 #-----------------------------------------------------------------------------
 # Main logic
 #-----------------------------------------------------------------------------
-TEST_DIR=../tests/
+TEST_DIR=tests/
 
-for test in $TEST_DIR/*; do
-    run_assembly $test
+rm $TEST_DIR/*.hex
+for test in $TEST_DIR/*.s; do
+    prog=${test}.hex
+
+    echo "Runnig test $test"
+    run_assembly $test $prog
+    simulate_rtl $prog
+    echo "End of test $test"
 done
 
-simulate_rtl
 
 while getopts ":lw-:" opt
 do
