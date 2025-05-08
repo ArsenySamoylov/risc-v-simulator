@@ -144,6 +144,9 @@ simulate_rtl()
 
     run_icarus "$extra_args"
 
+    rm $inst_template
+
+    
     # Don't print iverilog warning about not supporting constant selects
     sed -i -e '/sorry: constant selects/d' log.txt
     # Don't print $finish calls to make log cleaner
@@ -318,7 +321,7 @@ open_waveform()
 #-----------------------------------------------------------------------------
 # Main logic
 #-----------------------------------------------------------------------------
-TEST_DIR=tests/
+TEST_DIR=tests
 
 rm $TEST_DIR/*.hex
 for test in $TEST_DIR/*.s; do
@@ -327,6 +330,7 @@ for test in $TEST_DIR/*.s; do
     echo "Runnig test $test"
     run_assembly $test $prog
     simulate_rtl $prog
+    rm $prog
     echo "End of test $test"
 done
 
