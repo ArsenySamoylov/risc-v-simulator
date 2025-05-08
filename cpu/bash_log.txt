@@ -1,0 +1,76 @@
+++ basename run_linux_mac.sh
++ script=run_linux_mac.sh
++ dir_source_script=../scripts/run_linux_mac.sh
++ i=0
++ '[' 0 -lt 3 ']'
++ '[' -f ../scripts/run_linux_mac.sh ']'
++ break
++ '[' -f ../scripts/run_linux_mac.sh ']'
++++ dirname ../scripts/run_linux_mac.sh
+++ cd ../scripts
+++ pwd
+++ basename ../scripts/run_linux_mac.sh
++ dir_source_script=/mnt/c/Users/s84370774/Desktop/risc-v/scripts/run_linux_mac.sh
++ . /mnt/c/Users/s84370774/Desktop/risc-v/scripts/run_linux_mac.sh
+++ waveform_viewer=gtkwave
+++ TEST_DIR=../tests/
+++ for test in $TEST_DIR/*
+++ run_assembly test
+++ rars_jar=rars1_6.jar
+++ rars_args='nc a ae1 dump .text HexText program.hex'
+++ command -v rars
+++ command -v java
+++ rars_cmd='java -jar ../bin/rars1_6.jar'
+++ echo 'Running test test'
+Running test test
+++ java -jar ../bin/rars1_6.jar nc a ae1 dump .text HexText program.hex test
+++ simulate_rtl
+++ check_iverilog_executable
+++ command -v iverilog
+++ rm -f sim.out
+++ rm -f dump.vcd
+++ rm -f log.txt
++++ find_path ../common
++++ search_path=../common
++++ i=0
++++ '[' 0 -lt 3 ']'
++++ '[' -d ../common ']'
++++ search_path=../../common
++++ i=1
++++ '[' 1 -lt 3 ']'
++++ '[' -d ../../common ']'
++++ search_path=../../../common
++++ i=2
++++ '[' 2 -lt 3 ']'
++++ '[' -d ../../../common ']'
++++ search_path=../../../../common
++++ i=3
++++ '[' 3 -lt 3 ']'
++++ '[' -d ../../../../common ']'
++++ echo none
+++ common_path=none
+++ extra_args=
+++ choice=0
+++ '[' -f tb.sv ']'
+++ '[' -d testbenches ']'
+++ for d in */
+++ extra_args=
+++ '[' -d src/testbenches ']'
+++ '[' -f src/testbench.sv ']'
+++ extra_args='
+                            -I none
+                            src/*.sv'
+++ run_icarus '
+                            -I none
+                            src/*.sv'
+++ extra_args='
+                            -I none
+                            src/*.sv'
+++ iverilog -g2012 -o sim.out -I none src/instruction_rom.sv src/register_with_rst.sv src/sr_alu.sv src/sr_control.sv src/sr_cpu.sv src/sr_decode.sv src/sr_register_file.sv src/tb.sv
+++ vvp sim.out
+++ sed -i -e '/sorry: constant selects/d' log.txt
+++ sed -i -e '/finish called/d' log.txt
+++ getopts :lw-: opt
+++ grep -e PASS -e FAIL -e ERROR -e Error -e error -e Timeout -e ++ log.txt
+++ sed -e 's/PASS/\x1b[0;32m&\x1b[0m/g' -e 's/FAIL/\x1b[0;31m&\x1b[0m/g'
+src/tb.sv [0;32mPASS[0m
