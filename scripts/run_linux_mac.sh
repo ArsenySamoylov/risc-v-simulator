@@ -382,6 +382,10 @@ lint_code()
 
 run_assembly()
 {
+    if [ ! -f $1 ]; then
+        echo "Error: Test <$1> not found =("
+    fi
+
     rars_jar=rars1_6.jar
 
     #  nc                              - Copyright notice will not be displayed
@@ -414,7 +418,8 @@ run_assembly()
 
     # $rars_args has to be unquoted in order to pass as multiple arguments
     # shellcheck disable=SC2086
-    if ! $rars_cmd $rars_args program.s >> log.txt 2>&1
+
+    if ! $rars_cmd $rars_args $1 >> log.txt 2>&1
     then
         printf "ERROR: assembly failed. See log.txt.\n"
         grep Error log.txt
@@ -458,10 +463,11 @@ open_waveform()
 #-----------------------------------------------------------------------------
 # Main logic
 #-----------------------------------------------------------------------------
+TEST_DIR=../tests/
 
-if [ -f program.s ] ; then
-    run_assembly
-fi
+for test in $TEST_DIR/*; do
+    run_assembly $test
+done
 
 simulate_rtl
 
