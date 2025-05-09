@@ -330,7 +330,7 @@ for test in $TEST_DIR/*.s; do
     echo "Runnig test $test"
     run_assembly $test $prog
     simulate_rtl $prog
-    # rm -f $prog
+    rm -f $prog
 
     grep -e PASS -e FAIL -e ERROR -e Error -e error -e Timeout -e ++ log.txt \
     | sed -e 's/PASS/\x1b[0;32m&\x1b[0m/g' -e 's/FAIL/\x1b[0;31m&\x1b[0m/g'
