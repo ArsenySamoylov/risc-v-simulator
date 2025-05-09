@@ -23,7 +23,8 @@ module sr_decode
     output       [ 6:0] cmdF7,
     output logic [31:0] immI,
     output logic [31:0] immB,
-    output logic [31:0] immU
+    output logic [31:0] immU,
+    output logic        noop
 );
     assign cmdOp = instr [ 6: 0];
     assign rd    = instr [11: 7];
@@ -38,6 +39,8 @@ module sr_decode
     begin
         immI [10: 0] = instr [30:20];
         immI [31:11] = { 21 { instr [31] } };
+
+        noop = cmdOp == `RVOP_ADDI & immI == 12'd0;
     end
 
     // B-type

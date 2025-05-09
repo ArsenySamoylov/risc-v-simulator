@@ -21,7 +21,9 @@ module sr_cpu
     input   [31:0]  imData,   // instruction memory data
 
     input   [ 4:0]  regAddr,  // debug access reg address
-    output  [31:0]  regData   // debug access reg data
+    output  [31:0]  regData,  // debug access reg data
+
+    output          noop
 );
     // control wires
 
@@ -71,7 +73,8 @@ module sr_cpu
         .cmdF7      ( cmdF7       ),
         .immI       ( immI        ),
         .immB       ( immB        ),
-        .immU       ( immU        )
+        .immU       ( immU        ),
+        .noop       ( noop        )
     );
 
     // register file

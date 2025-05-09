@@ -21,6 +21,8 @@ module tb;
     logic [ 4:0] regAddr;  // debug access reg address
     wire  [31:0] regData;  // debug access reg data
 
+    wire noop;
+
     localparam ROM_SIZE = 1024;
     localparam ADDR_W   = $clog2(ROM_SIZE);
 
@@ -33,7 +35,8 @@ module tb;
         .imData  ( imData  ),
 
         .regAddr ( regAddr ),
-        .regData ( regData )
+        .regData ( regData ),
+        .noop    ( noop     )
     );
 
     instruction_rom # (.SIZE (ROM_SIZE)) i_rom
@@ -81,6 +84,12 @@ module tb;
         repeat (1000)
         begin
             @ (posedge clk);
+
+            if (noop)
+            begin
+                $display ("%s PASS", `__FILE__);
+                $finish;
+            end
 
             if (  regData == 32'h00213d05    // Fibonacci
                 | regData == 32'h1c8cfc00 )  // Factorial
