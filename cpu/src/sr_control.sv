@@ -18,6 +18,7 @@ module sr_control
     input        [ 2:0] cmdF3,
     input        [ 6:0] cmdF7,
     input               aluZero,
+    input               aluSlt,
     output              pcSrc,
     output logic        regWrite,
     output logic        aluSrc,

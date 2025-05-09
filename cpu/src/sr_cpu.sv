@@ -28,6 +28,7 @@ module sr_cpu
     // control wires
 
     wire        aluZero;
+    wire        aluSlt;
     wire        pcSrc;
     wire        regWrite;
     wire        aluSrc;
@@ -109,6 +110,7 @@ module sr_cpu
         .srcB       ( srcB        ),
         .oper       ( aluControl  ),
         .zero       ( aluZero     ),
+        .slt        ( aluSlt      ),
         .result     ( aluResult   )
     );
 
@@ -122,6 +124,7 @@ module sr_cpu
         .cmdF3      ( cmdF3       ),
         .cmdF7      ( cmdF7       ),
         .aluZero    ( aluZero     ),
+        .aluSlt     ( aluSlt      ),
         .pcSrc      ( pcSrc       ),
         .regWrite   ( regWrite    ),
         .aluSrc     ( aluSrc      ),
