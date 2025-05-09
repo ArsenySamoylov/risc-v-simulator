@@ -26,13 +26,13 @@ module sr_control
     output logic [ 2:0] aluControl
 );
     logic          branch;
-    logic          condZero;
-    assign pcSrc = branch & (aluZero == condZero);
+    logic          branchCond;
+    assign pcSrc = branch & branchCond;
 
     always_comb
     begin
         branch      = 1'b0;
-        condZero    = 1'b0;
+        branchCond  = 1'b0;
         regWrite    = 1'b0;
         aluSrc      = 1'b0;
         wdSrc       = 1'b0;
@@ -48,8 +48,47 @@ module sr_control
             { `RVF7_ANY,  `RVF3_ADDI, `RVOP_ADDI } : begin regWrite = 1'b1; aluSrc = 1'b1; aluControl = `ALU_ADD; end
             { `RVF7_ANY,  `RVF3_ANY,  `RVOP_LUI  } : begin regWrite = 1'b1; wdSrc  = 1'b1; end
 
-            { `RVF7_ANY,  `RVF3_BEQ,  `RVOP_BEQ  } : begin branch = 1'b1; condZero = 1'b1; aluControl = `ALU_SUB; end
-            { `RVF7_ANY,  `RVF3_BNE,  `RVOP_BNE  } : begin branch = 1'b1; aluControl = `ALU_SUB; end
+            { `RVF7_ANY,  `RVF3_BEQ,  `RVOP_BEQ  } : begin 
+                                                        branch = 1'b1; 
+                                                        branchCond =  aluZero; 
+                                                        aluControl = `ALU_SUB; 
+                                                     end
+
+            { `RVF7_ANY,  `RVF3_BNE,  `RVOP_BNE  } : begin 
+                                                        branch = 1'b1;
+                                                        branchCond = !aluZero;
+                                                        aluControl = `ALU_SUB; 
+                                                      end
+
+                                                                  { `RVF7_ANY,  `RVF3_BEQ,  `RVOP_BEQ  } : begin 
+                                                        branch = 1'b1; 
+                                                        branchCond =  aluZero; 
+                                                        aluControl = `ALU_SUB; 
+                                                     end
+
+            { `RVF7_ANY,  `RVF3_BLT,  `RVOP_BLT  } : begin 
+                                                        branch = 1'b1;
+                                                        branchCond =  aluSlt;
+                                                        aluControl = `ALU_SLT; 
+                                                      end
+
+            { `RVF7_ANY,  `RVF3_BGE,  `RVOP_BGE  } : begin 
+                                                        branch = 1'b1;
+                                                        branchCond =  !aluSlt;
+                                                        aluControl = `ALU_SLT; 
+                                                      end
+
+            { `RVF7_ANY,  `RVF3_BLTU, `RVOP_BLTU } : begin 
+                                                        branch = 1'b1;
+                                                        branchCond =  aluSlt;
+                                                        aluControl = `ALU_SLTU; 
+                                                      end
+
+            { `RVF7_ANY,  `RVF3_BGEU, `RVOP_BGEU } : begin 
+                                                        branch = 1'b1;
+                                                        branchCond =  !aluSlt;
+                                                        aluControl = `ALU_SLTU; 
+                                                      end                                  
         endcase
     end
 

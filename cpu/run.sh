@@ -323,9 +323,9 @@ open_waveform()
 #-----------------------------------------------------------------------------
 TEST_DIR=tests
 
-rm $TEST_DIR/*.hex
 for test in $TEST_DIR/*.s; do
     prog=${test}.hex
+    rm -f $prog
 
     echo "Runnig test $test"
     run_assembly $test $prog
