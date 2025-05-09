@@ -35,7 +35,7 @@ module sr_control
         branchCond  = 1'b0;
         regWrite    = 1'b0;
         aluSrc      = 1'b0;
-        wdSrc       = 1'b0;
+        wdSrc       = `SAVE_ALU_RES;
         aluControl  = `ALU_ADD;
 
         casez ({ cmdF7, cmdF3, cmdOp })
@@ -46,7 +46,7 @@ module sr_control
             { `RVF7_SUB,  `RVF3_SUB,  `RVOP_SUB  } : begin regWrite = 1'b1; aluControl = `ALU_SUB;  end
 
             { `RVF7_ANY,  `RVF3_ADDI, `RVOP_ADDI } : begin regWrite = 1'b1; aluSrc = 1'b1; aluControl = `ALU_ADD; end
-            { `RVF7_ANY,  `RVF3_ANY,  `RVOP_LUI  } : begin regWrite = 1'b1; wdSrc  = 1'b1; end
+            { `RVF7_ANY,  `RVF3_ANY,  `RVOP_LUI  } : begin regWrite = 1'b1; wdSrc = `SAVE_IMM; end
 
             { `RVF7_ANY,  `RVF3_BEQ,  `RVOP_BEQ  } : begin 
                                                         branch = 1'b1; 
@@ -88,7 +88,14 @@ module sr_control
                                                         branch = 1'b1;
                                                         branchCond =  !aluSlt;
                                                         aluControl = `ALU_SLTU; 
-                                                      end                                  
+                                                      end    
+
+            { `RVF7_ANY,  `RVF3_ANY, `RVOP_JAL  } : begin 
+                                                        branch     =  1;
+                                                        branchCond =  1;
+                                                        regWrite   =  1;
+                                                        wdSrc      = `SAVE_NEXT_PC;
+                                                      end      
         endcase
     end
 

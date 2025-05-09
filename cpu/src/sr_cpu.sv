@@ -83,7 +83,8 @@ module sr_cpu
     wire [31:0] rd0;
     wire [31:0] rd1;
     wire [31:0] rd2;
-    wire [31:0] wd3;
+    
+    wire logic [31:0] wd3;
 
     sr_register_file i_rf
     (
@@ -114,7 +115,12 @@ module sr_cpu
         .result     ( aluResult   )
     );
 
-    assign wd3 = wdSrc ? immU : aluResult;
+    always_comb
+    case(wdSrc)
+        `SAVE_IMM:     wd3 = immU;
+        `SAVE_ALU_RES: wd3 = aluResult;
+        `SAVE_NEXT_PC: wd3 = pcNext;
+    endcase
 
     // control
 

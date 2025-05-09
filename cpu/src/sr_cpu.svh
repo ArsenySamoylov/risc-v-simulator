@@ -13,6 +13,11 @@
 `ifndef SR_CPU_SVH
 `define SR_CPU_SVH
 
+// Control what to save in regfile
+`define SAVE_ALU_RES 2'b00
+`define SAVE_IMM     2'b01
+`define SAVE_NEXT_PC 2'b10
+
 // ALU commands
 
 `define ALU_ADD     3'b000
@@ -33,6 +38,9 @@
 `define RVOP_BLTU   7'b1100011
 `define RVOP_BGEU   7'b1100011
 
+`define RVOP_JAL    7'b1101111
+`define RVOP_JALR   7'b1100111
+
 `define RVOP_LUI    7'b0110111
 `define RVOP_ADD    7'b0110011
 `define RVOP_OR     7'b0110011
@@ -52,6 +60,8 @@
 `define RVF3_BGE    3'b101
 `define RVF3_BLTU   3'b110
 `define RVF3_BGEU   3'b111
+
+`define RVF3_JALR   3'b000
 
 `define RVF3_ADD    3'b000
 `define RVF3_OR     3'b110
