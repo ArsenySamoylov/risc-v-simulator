@@ -89,7 +89,13 @@ module sr_control
                                                         pcSrc      = `PC_IMMJ;
                                                         regWrite   =  1;
                                                         wdSrc      = `SAVE_NEXT_PC;
-                                                      end      
+                                                      end
+
+            { `RVF7_ANY,  `RVF3_JALR, `RVOP_JALR} : begin 
+                                                        pcSrc      = `PC_REG_PLUS_IMM;
+                                                        regWrite   =  1;
+                                                        wdSrc      = `SAVE_NEXT_PC;
+                                                      end     
         endcase
     end
 

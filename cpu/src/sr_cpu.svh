@@ -24,7 +24,7 @@
 `define PC_PLUS_4       2'b00
 `define PC_IMMJ         2'b01
 `define PC_IMMB         2'b10
-`define PC_PLUS_REG     2'b11
+`define PC_REG_PLUS_IMM 2'b11
 
 
 // ALU commands

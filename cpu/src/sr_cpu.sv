@@ -55,10 +55,10 @@ module sr_cpu
 
     always_comb
     case (pcSrc)
-        `PC_PLUS_4  : pcNext = pc + 32'd4;
-        `PC_IMMB    : pcNext = pc + immB;
-        `PC_IMMJ    : pcNext = pc + immJ;
-        `PC_PLUS_REG: pcNext = pc + rd1;
+        `PC_PLUS_4      : pcNext = pc  + 32'd4;
+        `PC_IMMB        : pcNext = pc  + immB;
+        `PC_IMMJ        : pcNext = pc  + immJ;
+        `PC_REG_PLUS_IMM: pcNext = rd1 + immI;
     endcase
 
     register_with_rst r_pc (clk, rst, pcNext, pc);
