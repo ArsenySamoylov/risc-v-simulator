@@ -19,24 +19,19 @@ module sr_control
     input        [ 6:0] cmdF7,
     input               aluZero,
     input               aluSlt,
-    output              pcSrc,
+    output logic [ 1:0] pcSrc,
     output logic        regWrite,
     output logic        aluSrc,
-    output logic        wdSrc,
+    output logic [ 1:0] wdSrc,
     output logic [ 2:0] aluControl
 );
-    logic          branch;
-    logic          branchCond;
-    assign pcSrc = branch & branchCond;
-
     always_comb
     begin
-        branch      = 1'b0;
-        branchCond  = 1'b0;
         regWrite    = 1'b0;
         aluSrc      = 1'b0;
         wdSrc       = `SAVE_ALU_RES;
         aluControl  = `ALU_ADD;
+        pcSrc      = `PC_PLUS_4;
 
         casez ({ cmdF7, cmdF3, cmdOp })
             { `RVF7_ADD,  `RVF3_ADD,  `RVOP_ADD  } : begin regWrite = 1'b1; aluControl = `ALU_ADD;  end
@@ -49,50 +44,49 @@ module sr_control
             { `RVF7_ANY,  `RVF3_ANY,  `RVOP_LUI  } : begin regWrite = 1'b1; wdSrc = `SAVE_IMM; end
 
             { `RVF7_ANY,  `RVF3_BEQ,  `RVOP_BEQ  } : begin 
-                                                        branch = 1'b1; 
-                                                        branchCond =  aluZero; 
+                                                        if(aluZero)
+                                                          pcSrc = `PC_IMMB;
+
                                                         aluControl = `ALU_SUB; 
                                                      end
 
             { `RVF7_ANY,  `RVF3_BNE,  `RVOP_BNE  } : begin 
-                                                        branch = 1'b1;
-                                                        branchCond = !aluZero;
+                                                         if(!aluZero)
+                                                          pcSrc = `PC_IMMB;
+
                                                         aluControl = `ALU_SUB; 
                                                       end
 
-                                                                  { `RVF7_ANY,  `RVF3_BEQ,  `RVOP_BEQ  } : begin 
-                                                        branch = 1'b1; 
-                                                        branchCond =  aluZero; 
-                                                        aluControl = `ALU_SUB; 
-                                                     end
-
             { `RVF7_ANY,  `RVF3_BLT,  `RVOP_BLT  } : begin 
-                                                        branch = 1'b1;
-                                                        branchCond =  aluSlt;
+                                                        if (aluSlt)
+                                                          pcSrc = `PC_IMMB;
+
                                                         aluControl = `ALU_SLT; 
                                                       end
 
             { `RVF7_ANY,  `RVF3_BGE,  `RVOP_BGE  } : begin 
-                                                        branch = 1'b1;
-                                                        branchCond =  !aluSlt;
+                                                        if (!aluSlt)
+                                                          pcSrc = `PC_IMMB;
+
                                                         aluControl = `ALU_SLT; 
                                                       end
 
             { `RVF7_ANY,  `RVF3_BLTU, `RVOP_BLTU } : begin 
-                                                        branch = 1'b1;
-                                                        branchCond =  aluSlt;
+                                                        if (aluSlt)
+                                                          pcSrc = `PC_IMMB;
+
                                                         aluControl = `ALU_SLTU; 
                                                       end
 
             { `RVF7_ANY,  `RVF3_BGEU, `RVOP_BGEU } : begin 
-                                                        branch = 1'b1;
-                                                        branchCond =  !aluSlt;
+                                                        if (!aluSlt)
+                                                          pcSrc = `PC_IMMB;
+
                                                         aluControl = `ALU_SLTU; 
                                                       end    
 
             { `RVF7_ANY,  `RVF3_ANY, `RVOP_JAL  } : begin 
-                                                        branch     =  1;
-                                                        branchCond =  1;
+                                                        pcSrc      = `PC_IMMJ;
                                                         regWrite   =  1;
                                                         wdSrc      = `SAVE_NEXT_PC;
                                                       end      

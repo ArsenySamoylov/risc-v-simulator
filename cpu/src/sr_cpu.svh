@@ -13,10 +13,19 @@
 `ifndef SR_CPU_SVH
 `define SR_CPU_SVH
 
-// Control what to save in regfile
+// Control 
+
+// what to save in regfile
 `define SAVE_ALU_RES 2'b00
 `define SAVE_IMM     2'b01
 `define SAVE_NEXT_PC 2'b10
+
+// what is next pc
+`define PC_PLUS_4       2'b00
+`define PC_IMMJ         2'b01
+`define PC_IMMB         2'b10
+`define PC_PLUS_REG     2'b11
+
 
 // ALU commands
 
