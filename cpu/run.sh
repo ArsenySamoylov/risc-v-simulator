@@ -337,7 +337,7 @@ for test in $TEST_DIR/*.s; do
 
     rm -f log.txt
 
-    echo "End of test $test"
+    echo "End of test $test\n"
 done
 
 
